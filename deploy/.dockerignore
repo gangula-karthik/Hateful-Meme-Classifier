@@ -1,0 +1,35 @@
+# Ignore Python bytecode
+__pycache__/
+*/__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Ignore virtual environments
+venv/
+*/venv/
+.env
+*/.env
+.venv/
+*/.venv/
+
+# Ignore Jupyter Notebook checkpoints
+.ipynb_checkpoints/
+*/.ipynb_checkpoints/
+
+# Ignore logs and output files
+logs/
+*/logs/
+output/
+*/output/
+data/
+*/data/
+
+# Ignore ML model checkpoints (optional, if loaded separately)
+model_checkpoints/
+*/model_checkpoints/
+
+# Ignore Docker cache files
+.dockerignore
+.DS_Store
+*/.DS_Store
