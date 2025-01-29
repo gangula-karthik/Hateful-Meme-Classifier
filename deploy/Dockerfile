@@ -8,7 +8,7 @@ WORKDIR /app
 COPY . /app
 
 # Ensure we are in the correct working directory
-WORKDIR /app/server
+# WORKDIR /app/server
 
 # Install dependencies (adjust path based on actual location)
 RUN pip install --no-cache-dir -r /app/server/requirements.txt
@@ -18,4 +18,4 @@ RUN pip install --no-cache-dir -r /app/server/requirements.txt
 ENV PORT 8000
 
 # Run FastAPI
-CMD exec uvicorn main:app --host 0.0.0.0 --port ${PORT}
+CMD exec uvicorn server.main:app --host 0.0.0.0 --port ${PORT}
