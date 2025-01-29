@@ -1,4 +1,6 @@
-from fastapi import FastAPI, HTTPException
+import os
+from fastapi import FastAPI, HTTPException, Response
+import uvicorn
 import time
 from pydantic import BaseModel
 from PIL import Image
@@ -9,7 +11,8 @@ from typing import List
 import numpy as np
 import tensorflow as tf
 from .utils import image_processing_pipeline, text_preprocessing_pipeline, get_clip_embeddings_from_base64, embedding_fusion, meme_explanation
-from fastapi.middleware.cors import CORSMiddleware
+# from fastapi.middleware.cors import CORSMiddleware
+from starlette.middleware.cors import CORSMiddleware
 
 logger = logging.getLogger('uvicorn.error')
 logger.setLevel(logging.DEBUG)
@@ -38,10 +41,9 @@ def decode_base64_image(base64_str: str) -> Image.Image:
         raise HTTPException(status_code=400, detail=f"Invalid base64 image data: {e}")
 
 
-@app.get("/")
-def read_root():
-    return {"message": "Welcome to the hateful-meme-classifier microservice. Please refer to /docs for further details."}, 200
-
+@app.get("/", tags=["healthCheck"])
+def health(response: Response):
+    return {"status": "OK", "message": "Welcome to the hateful-meme-classifier microservice. Please refer to /docs for further details."}
 
 
 @app.post("/predict")
@@ -98,3 +100,6 @@ async def predict(image_request: ImageRequest):
     logger.debug(f"All predictions: {predictions}")
     return {"predictions": predictions[0], "time_taken": processing_time, "explanation": explanation}
 
+
+if __name__ == "__main__":
+    uvicorn.run(app, host='0.0.0.0', port=os.getenv('PORT', 8000))

@@ -2,6 +2,13 @@ hateful-meme-classifier
 ==============================
 End to end deep learning project building a hateful meme classifier and deploying it
 
+```
+docker system prune -f
+
+docker build --platform linux/amd64 -t gkarthik923/hateful-meme-detector-app:latest -f deploy/Dockerfile . --push
+```
+
+
 ### Project Structure
 ```
 ├── LICENSE
