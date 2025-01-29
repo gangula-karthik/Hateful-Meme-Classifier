@@ -43,11 +43,13 @@ def decode_base64_image(base64_str: str) -> Image.Image:
 
 @app.get("/", tags=["healthCheck"])
 def health(response: Response):
+    response.headers["Access-Control-Allow-Origin"] = "*"
     return {"status": "OK", "message": "Welcome to the hateful-meme-classifier microservice. Please refer to /docs for further details."}
 
 
 @app.post("/predict")
-async def predict(image_request: ImageRequest):
+async def predict(image_request: ImageRequest, response: Response):
+    response.headers["Access-Control-Allow-Origin"] = "*"
     predictions = []
     processing_time = 0  # Initialize to calculate the total time for processing
     explanation = None
@@ -62,7 +64,7 @@ async def predict(image_request: ImageRequest):
             text_emb, img_emb = get_clip_embeddings_from_base64(processed_image, text)
             final_emb = embedding_fusion(text_emb, img_emb)
 
-            tflite_interpreter = tf.lite.Interpreter(model_path="../model_checkpoints/best_model.tflite")
+            tflite_interpreter = tf.lite.Interpreter(model_path="./model_checkpoints/best_model.tflite")
             tflite_interpreter.allocate_tensors()
 
             input_details = tflite_interpreter.get_input_details()
