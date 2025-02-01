@@ -33,7 +33,7 @@ class ImageRequest(BaseModel):
     images: List[str]
 
 try:
-    tflite_interpreter = tf.lite.Interpreter(model_path="model_checkpoints/best_model.tflite")
+    tflite_interpreter = tf.lite.Interpreter(model_path="/app/model_checkpoints/best_model.tflite")
     tflite_interpreter.allocate_tensors()
 
     input_details = tflite_interpreter.get_input_details()
