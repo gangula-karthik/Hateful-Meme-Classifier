@@ -11,7 +11,7 @@ clip_model = TFCLIPModel.from_pretrained(clip_model_name)
 clip_processor = CLIPProcessor.from_pretrained(clip_model_name)
 
 
-def get_clip_embeddings_from_base64(images, texts, embedding_dim=1024, alpha=0.5):
+def get_clip_embeddings_from_base64(images, texts, embedding_dim=1024):
     image_embeds = []
     text_embeds = []
 
@@ -39,23 +39,7 @@ def get_clip_embeddings_from_base64(images, texts, embedding_dim=1024, alpha=0.5
     image_proj_layer = Dense(embedding_dim, name="image_projection")
     text_proj_layer = Dense(embedding_dim, name="text_projection")
 
-    # Apply projection
-    F_proj_I = image_proj_layer(image_embeds)
-    F_proj_T = text_proj_layer(text_embeds)
-
-    # Define feature adapters
-    image_adapter = Dense(embedding_dim, activation='relu', name="image_adapter")
-    text_adapter = Dense(embedding_dim, activation='relu', name="text_adapter")
-
-    # Apply adapters
-    A_I = image_adapter(F_proj_I)
-    A_T = text_adapter(F_proj_T)
-
-    # Compute final representations with residual connections
-    F_I = alpha * A_I + (1 - alpha) * F_proj_I
-    F_T = alpha * A_T + (1 - alpha) * F_proj_T
-
-    return F_I.numpy(), F_T.numpy()
+    return image_embeds, text_embeds
 
 def embedding_fusion(img_emb, text_emb): 
     return img_emb * text_emb

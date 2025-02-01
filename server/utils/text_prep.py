@@ -83,7 +83,7 @@ def meme_explanation(image, predictions):
             "content": [
                 {
                     "type": "text",
-                    "text": f"Explain in 3 clear, short and concise bullet points how exactly the given image is offensive, taking into account the following model predictions: {predictions}. Also, describe the consequences of the meme.",
+                    "text": f"The given meme is predicted by the model to be: {predictions}. Do you agree with the model ? Explain your reasoning and the consequences if it is a harmful meme.",
                 },
                 {
                     "type": "image_url",
