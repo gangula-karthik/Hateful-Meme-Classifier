@@ -26,8 +26,8 @@ data/
 */data/
 
 # Ignore ML model checkpoints (optional, if loaded separately)
-model_checkpoints/
-*/model_checkpoints/
+# model_checkpoints/
+# */model_checkpoints/
 
 # Ignore Docker cache files
 .dockerignore
