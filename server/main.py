@@ -58,6 +58,7 @@ async def process_text_and_image(image_base64):
 
 @app.get("/", tags=["healthCheck"])
 def health(response: Response):
+    logger.debug(f"Current directory: {os.getcwd()}")
     response.headers["Access-Control-Allow-Origin"] = "*"
     return {"status": "OK", "message": "Welcome to the hateful-meme-classifier microservice. Please refer to /docs for further details."}
 
