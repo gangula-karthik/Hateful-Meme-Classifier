@@ -32,11 +32,16 @@ app.add_middleware(
 class ImageRequest(BaseModel):
     images: List[str]
 
-tflite_interpreter = tf.lite.Interpreter(model_path="model_checkpoints/best_model.tflite")
-tflite_interpreter.allocate_tensors()
+try:
+    tflite_interpreter = tf.lite.Interpreter(model_path="model_checkpoints/best_model.tflite")
+    tflite_interpreter.allocate_tensors()
 
-input_details = tflite_interpreter.get_input_details()
-output_details = tflite_interpreter.get_output_details()
+    input_details = tflite_interpreter.get_input_details()
+    output_details = tflite_interpreter.get_output_details()
+except Exception as e:
+    logger.debug(f"Current directory: {os.getcwd()}")
+    logger.error(f"Error loading TFLite model: {e}")
+    raise HTTPException(status_code=500, detail="Error loading model")
 
 
 def decode_base64_image(base64_str: str) -> Image.Image:
@@ -58,7 +63,6 @@ async def process_text_and_image(image_base64):
 
 @app.get("/", tags=["healthCheck"])
 def health(response: Response):
-    logger.debug(f"Current directory: {os.getcwd()}")
     response.headers["Access-Control-Allow-Origin"] = "*"
     return {"status": "OK", "message": "Welcome to the hateful-meme-classifier microservice. Please refer to /docs for further details."}
 
