@@ -24,7 +24,7 @@ def extract_text(image):
             "content": [
                 {
                     "type": "text",
-                    "text": "Extract all the relevant text from this meme. If in another language, translate text into English.",
+                    "text": "Extract all the relevant text from this meme. If in another language, translate text into English. If there is no text found the caption the image in a very short manner. Avoid identifying watermarks.",
                 },
                 {
                     "type": "image_url",
@@ -83,7 +83,7 @@ def meme_explanation(image):
             "content": [
                 {
                     "type": "text",
-                    "text": "Explain how exactly the given image is offensive. Tell the consequences of the meme as well. ",
+                    "text": "Explain in 3 clear, short and concise bullet points how exactly the given image is offensive. Tell the consequences of the meme as well.",
                 },
                 {
                     "type": "image_url",
@@ -96,7 +96,7 @@ def meme_explanation(image):
     response_format={
         "type": "json_schema",
         "json_schema": {
-            "name": "ocr_output",
+            "name": "explainability_output",
             "schema": {
                 "type": "object",
                 "properties": {
