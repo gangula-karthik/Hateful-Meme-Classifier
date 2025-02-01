@@ -103,7 +103,7 @@ async def predict(image_request: ImageRequest, response: Response):
         end_time = time.time()
         processing_time = end_time - start_time
 
-        explanation = meme_explanation(image_base64)
+        explanation = meme_explanation(image_base64, predictions[0])
 
     return {"predictions": predictions[0], "time_taken": processing_time, "explanation": explanation}
 

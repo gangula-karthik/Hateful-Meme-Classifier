@@ -74,7 +74,7 @@ def text_preprocessing_pipeline(image):
     return res
 
 
-def meme_explanation(image):
+def meme_explanation(image, predictions):
     response = client.chat.completions.create(
     model="gpt-4o-mini",
     messages=[
@@ -83,7 +83,7 @@ def meme_explanation(image):
             "content": [
                 {
                     "type": "text",
-                    "text": "Explain in 3 clear, short and concise bullet points how exactly the given image is offensive. Tell the consequences of the meme as well.",
+                    "text": f"Explain in 3 clear, short and concise bullet points how exactly the given image is offensive, taking into account the following model predictions: {predictions}. Also, describe the consequences of the meme.",
                 },
                 {
                     "type": "image_url",
