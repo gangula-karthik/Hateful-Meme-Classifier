@@ -86,7 +86,7 @@ async def predict(image_request: ImageRequest, response: Response):
         tflite_interpreter.invoke()
 
         pred = tflite_interpreter.get_tensor(output_details[0]['index'])
-        predicted_class = int(pred[0] >= 0.5)
+        predicted_class = int(pred[0] > 0.6)
         confidence = float(pred[0])
 
         predictions.append({
