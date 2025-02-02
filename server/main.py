@@ -71,41 +71,45 @@ def health(response: Response):
 async def predict(image_request: ImageRequest, response: Response):
     response.headers["Access-Control-Allow-Origin"] = "*"
     predictions = []
-    processing_time = 0  # Initialize to calculate the total time for processing
+    processing_time = 0
     explanation = None
 
-    for image_base64 in image_request.images:
-        start_time = time.time()
+    start_time = time.time()
 
-        try:
-            text, processed_image = await process_text_and_image(image_base64)
+    try:
+        text, processed_image = await process_text_and_image(image_request.images[0])
+        text_emb, img_emb = get_clip_embeddings_from_base64(processed_image, text)
 
-            text_emb, img_emb = get_clip_embeddings_from_base64(processed_image, text)
-            final_emb = embedding_fusion(text_emb, img_emb)
+        tflite_interpreter.set_tensor(input_details[0]['index'], text_emb)  
+        tflite_interpreter.set_tensor(input_details[1]['index'], img_emb)
 
-            final_emb = final_emb.astype(input_details[0]['dtype'])
+        tflite_interpreter.invoke()
 
-            tflite_interpreter.set_tensor(input_details[0]['index'], final_emb)
-            tflite_interpreter.invoke()
-            pred = tflite_interpreter.get_tensor(output_details[0]['index'])
+        pred = tflite_interpreter.get_tensor(output_details[0]['index'])
+        predicted_class = int(pred[0] >= 0.5)
+        confidence = float(pred[0])
 
-            predicted_class = int(pred[0] >= 0.5)
-            confidence = float(pred[0])
+        predictions.append({
+            "predicted_class": predicted_class,
+            "confidence": confidence
+        })
 
-            predictions.append({
-                "predicted_class": predicted_class,
-                "confidence": confidence
-            })
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error processing image: {str(e)}")
 
-        except Exception as e:
-            logger.error(f"Error processing image: {e}")
+    end_time = time.time()
+    processing_time = end_time - start_time
 
-        end_time = time.time()
-        processing_time = end_time - start_time
+    # Explanation (if necessary, can be an additional function)
+    explanation = meme_explanation(image_request.images[0], predictions[0])
 
-        explanation = meme_explanation(image_base64, predictions[0])
+    logger.debug(predictions)
 
-    return {"predictions": predictions[0], "time_taken": processing_time, "explanation": explanation}
+    return {
+        "predictions": predictions[0],
+        "time_taken": processing_time,
+        "explanation": explanation
+    }
 
 
 if __name__ == "__main__":

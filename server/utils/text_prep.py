@@ -75,6 +75,7 @@ def text_preprocessing_pipeline(image):
 
 
 def meme_explanation(image, predictions):
+    predicted_label = "harmful" if predictions['predicted_class'] == 1 else "harmless"
     response = client.chat.completions.create(
     model="gpt-4o-mini",
     messages=[
@@ -83,7 +84,7 @@ def meme_explanation(image, predictions):
             "content": [
                 {
                     "type": "text",
-                    "text": f"The given meme is predicted by the model to be: {predictions}. Do you agree with the model ? Explain your reasoning and the consequences if it is a harmful meme.",
+                    "text": f"The given meme is predicted by the model to be **{predicted_label}**. Do you agree with the model's assessment ? Explain your reasoning in a short and concise manner as the judge and discuss the potential consequences of this meme, especially if it is harmful."
                 },
                 {
                     "type": "image_url",
