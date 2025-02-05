@@ -1,52 +1,36 @@
-hateful-meme-classifier
+Hateful Meme Classifier
 ==============================
 End to end deep learning project building a hateful meme classifier and deploying it
 
-```
-docker system prune -a --volumes -f
-docker system prune -f
-
-docker build --platform linux/amd64 -t gkarthik923/hateful-meme-detector-app:latest -f deploy/Dockerfile . --push
-```
+### Deployment
+Both the frontend and the backend have been deployed by me on google cloud platform: 
+Link to website: https://frontend-315644372008.us-central1.run.app/
+Link to harmful meme backend: https://hateful-meme-classifier-315644372008.us-central1.run.app/
 
 
 ### Project Structure
 ```
-├── LICENSE
-├── README.md          <- The top-level README for this project
-│
-├── requirements.txt   <- The requirements file for reproducing the analysis environment, e.g.
-│                         generated with `pip freeze > requirements.txt`
-│
-├── assets             <- Stores any images, PDFs, or other static assets
-│ 
-├── data
-│   ├── processed      <- The final, processed data sets for modeling
-│   └── raw            <- The original, immutable data dump
-│
-├── deploy             <- Stores any files, configurations related to deploying your model (Dockerfile, etc.)
-│ 
-├── model_checkpoints  <- Trained and serialized models, model predictions, model summaries, config files
-│
-├── notebooks          <- Jupyter notebooks for doing exploratory data analysis, analyzing model outputs, etc.
-│
-├── scripts            <- Single-purpose scripts for functionality such as processing and cleaning data
-│
-├── tests              <- Tests for the various aspects of the project (data cleanliness, data processing, model training code, etc.)
-│
-├── hateful-meme-classifier     <- Source code for use in this project
-│   ├── __init__.py    <- Makes hateful-meme-classifier a Python module
-│   │
-│   ├── model          <- Stores any relevant modeling code, interfaces, and definitions
-│   │   └── __init__.py
-│   │
-│   ├── server         <- Stores deployment and inference server code
-│   │   ├── __init__.py
-│   │   └── main.py    <- Main module for running server
-│   │
-│   ├── utils          <- Stores various utilities used in project 
-│   │   ├── __init__.py
-│   │
-│   ├── train.py       <- Script to run model training
-│   └── eval.py        <- Script to run trained model evaluation 
+Inside the Harmful-Meme-Classifier folder (deep learning model + fastAPI server): 
+- assets: contains some images and project proposal
+- data: contains the datasets
+- notebooks: contains all the notebooks: 
+    - data_preparation folder: 
+        - data_preparation.ipynb: all the data processing code
+        - gen_ai_image_inpainting.ipynb: attempting to use gen ai for image inpainting task
+        - image_inpatining.ipynb: the simpler image inpainting function that was used
+        - processing_test_set.ipynb: data processing function for test set
+        - smol-VLM_ocr_extraction: performing ocr on the webscraped images
+    - modelling folder: 
+        - modelling.ipynb: contains the modelling, hyperparameter tuning and evaluation code
+- Dockerfile: used to deploy the webserver
+- server folder: The code for the fastAPI server along with requirements.txt for environment
+- model_checkpoints:
+    - best_model.tflite: the model that I am using
+    - v1 folder: this contains the old model that I was using (not required anymore)
 ```
+
+
+### Datasets
+- Due to the large size of the datasets, it has been uploaded on kaggle: 
+  - Processed training dataset: https://kaggle.com/datasets/d7fda92983d1e97946751ba8a58b26b883485f15c6ff7c4c3b62bfe6e0b60718
+  - Processed testing dataset: https://kaggle.com/datasets/b58a8121d1f4135b6979ce74a9a64dae21c279a667c5e28b518dadf54271a091
