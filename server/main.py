@@ -101,6 +101,12 @@ def health(response: Response):
     response.headers["Access-Control-Allow-Origin"] = "*"
     return {"status": "OK", "message": "Welcome to the hateful-meme-classifier microservice. Please refer to /docs for further details."}
 
+@app.get("/fetch_model_performance")
+def model_performance(response: Response):
+    response.headers["Access-Control-Allow-Origin"] = "*"
+    response = supabase.table("harmful-meme-retraining-loop").select("*").execute()
+    logger.debug(response)
+    return response
 
 @app.post("/predict")
 async def predict(image_request: ImageRequest, response: Response):
@@ -147,6 +153,8 @@ async def predict(image_request: ImageRequest, response: Response):
     insert_judge_output(judge_output, predictions, image_request.images[0])
 
     return output
+
+
 
 
 if __name__ == "__main__":
