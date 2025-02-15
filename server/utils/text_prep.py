@@ -52,7 +52,6 @@ def extract_text(image):
     )
 
     res = json.loads(response.choices[0].message.content)["final_answer"]
-    print(res)
     return res
 
 def masking_usernames(text): 
@@ -77,39 +76,39 @@ def text_preprocessing_pipeline(image):
 def meme_explanation(image, predictions):
     predicted_label = "harmful" if predictions['predicted_class'] == 1 else "harmless"
     response = client.chat.completions.create(
-    model="gpt-4o-mini",
-    messages=[
-        {
-            "role": "user",
-            "content": [
-                {
-                    "type": "text",
-                    "text": f"The given meme is predicted by the model to be **{predicted_label}**. Do you agree with the model's assessment ? Explain your reasoning in a short and concise manner as the judge and discuss the potential consequences of this meme, especially if it is harmful."
+        model="gpt-4o-mini",
+        messages=[
+            {
+                "role": "user",
+                "content": [
+                    {
+                        "type": "text",
+                        "text": f"The given meme is predicted by the model to be **{predicted_label}**. Do you agree with the model's assessment? Provide a label ('harmful' or 'harmless') based on your reasoning and explain why. Discuss any potential consequences if it is harmful."
+                    },
+                    {
+                        "type": "image_url",
+                        "image_url": {"url": image},
+                    },
+                ],
+            }
+        ],
+        response_format={
+            "type": "json_schema",
+            "json_schema": {
+                "name": "explainability_output",
+                "schema": {
+                    "type": "object",
+                    "properties": {
+                        "final_label": {"type": "string", "enum": ["harmful", "harmless"]},
+                        "explanation": {"type": "string"}
+                    },
+                    "required": ["final_label", "explanation"],
+                    "additionalProperties": False
                 },
-                {
-                    "type": "image_url",
-                    "image_url": {"url": image},
-                },
-            ],
+                "strict": True
+            }
         }
-    ],
-    
-    response_format={
-        "type": "json_schema",
-        "json_schema": {
-            "name": "explainability_output",
-            "schema": {
-                "type": "object",
-                "properties": {
-                    "final_answer": {"type": "string"}
-                },
-                "required": ["final_answer"],
-                "additionalProperties": False
-            },
-            "strict": True
-        }
-    }
     )
 
-    res = json.loads(response.choices[0].message.content)["final_answer"]
+    res = json.loads(response.choices[0].message.content)
     return res

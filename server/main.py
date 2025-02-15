@@ -2,8 +2,11 @@ import os
 from fastapi import FastAPI, HTTPException, Response
 import uvicorn
 import time
+import re
 from pydantic import BaseModel
 from PIL import Image
+import random
+import string
 import logging
 import base64
 from io import BytesIO
@@ -12,8 +15,13 @@ import asyncio
 import numpy as np
 import tensorflow as tf
 from .utils import image_processing_pipeline, text_preprocessing_pipeline, get_clip_embeddings_from_base64, embedding_fusion, meme_explanation
-# from fastapi.middleware.cors import CORSMiddleware
 from starlette.middleware.cors import CORSMiddleware
+from supabase import create_client, Client
+
+SUPABASE_URL = os.environ.get("SUPABASE_URL")
+SUPABASE_KEY = os.environ.get("SUPABASE_KEY")
+
+supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
 
 logger = logging.getLogger('uvicorn.error')
 logger.setLevel(logging.DEBUG)
@@ -39,8 +47,6 @@ try:
     input_details = tflite_interpreter.get_input_details()
     output_details = tflite_interpreter.get_output_details()
 except Exception as e:
-    logger.debug(f"Current directory: {os.getcwd()}")
-    logger.error(f"Error loading TFLite model: {e}")
     raise HTTPException(status_code=500, detail="Error loading model")
 
 
@@ -51,6 +57,35 @@ def decode_base64_image(base64_str: str) -> Image.Image:
         return image
     except Exception as e:
         raise HTTPException(status_code=400, detail=f"Invalid base64 image data: {e}")
+
+def insert_judge_output(res, predictions, image):
+    """Uploads judge LLM output & image to Supabase, ensuring unique filename."""
+    
+    def rand_filename(ext="png", length=8):
+        return f"{''.join(random.choices(string.ascii_letters + string.digits, k=length))}.{ext}"
+    
+    res = {
+        "judge_model": 1 if res["final_label"] == "harmful" else 0,
+        "prod_model": predictions["predicted_class"],
+        "judge_explanation": res["explanation"]
+    }
+
+    for _ in range(5):  # Max 5 retries for unique filename
+        file_name = rand_filename()
+        image = re.sub(r"^data:image/\w+;base64,", "", image)
+        try:
+            meme_upload = supabase.storage.from_("memes").upload(
+                path=file_name,
+                file=base64.b64decode(image),
+                file_options={"cache-control": "3600", "upsert": "false"},
+            )
+            res["meme_url"] = supabase.storage.from_("memes").get_public_url(meme_upload.path)
+            break  # Success
+        except Exception as e:
+            if "already exists" not in str(e):
+                return {"error": str(e)}  # Unexpected error, exit
+
+    return supabase.table("harmful-meme-retraining-loop").insert(res).execute()
     
 async def process_text_and_image(image_base64):
     """Run text and image processing in parallel."""
@@ -70,7 +105,6 @@ def health(response: Response):
 @app.post("/predict")
 async def predict(image_request: ImageRequest, response: Response):
     response.headers["Access-Control-Allow-Origin"] = "*"
-    predictions = []
     processing_time = 0
     explanation = None
 
@@ -89,10 +123,10 @@ async def predict(image_request: ImageRequest, response: Response):
         predicted_class = int(pred[0] > 0.6)
         confidence = float(pred[0])
 
-        predictions.append({
+        predictions = {
             "predicted_class": predicted_class,
             "confidence": confidence
-        })
+        }
 
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error processing image: {str(e)}")
@@ -101,15 +135,18 @@ async def predict(image_request: ImageRequest, response: Response):
     processing_time = end_time - start_time
 
     # Explanation (if necessary, can be an additional function)
-    explanation = meme_explanation(image_request.images[0], predictions[0])
+    judge_output = meme_explanation(image_request.images[0], predictions)
 
-    logger.debug(predictions)
-
-    return {
-        "predictions": predictions[0],
+    output = {
+        "predictions": predictions,
         "time_taken": processing_time,
-        "explanation": explanation
+        "explanation": judge_output['explanation']
     }
+
+    # adding to supbase
+    insert_judge_output(judge_output, predictions, image_request.images[0])
+
+    return output
 
 
 if __name__ == "__main__":

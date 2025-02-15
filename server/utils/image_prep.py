@@ -40,8 +40,6 @@ def extract_text_with_binary_mask(image_path, languages=['en'], gpu=False):
                       (int(l_bbox), int(l_bbox1)), 
                       (int(r_bbox), int(r_bbox1)), 
                       255, -1)
-        
-    print(binary_mask)
     
     return image, binary_mask
 
@@ -84,7 +82,6 @@ def image_processing_pipeline(image):
     img, mask = extract_text_with_binary_mask(image)
     res_img = image_inpainting(img, mask)
     res_img = resize_and_center_crop(res_img)
-    print("res_img", type(res_img))
     return res_img
 
 
