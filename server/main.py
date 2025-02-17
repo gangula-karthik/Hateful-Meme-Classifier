@@ -41,7 +41,10 @@ class ImageRequest(BaseModel):
     images: List[str]
 
 try:
-    tflite_interpreter = tf.lite.Interpreter(model_path="./model_checkpoints/best_model.tflite")
+    tflite_interpreter = tf.lite.Interpreter(
+        model_path="./model_checkpoints/best_model.tflite",
+        experimental_delegates=[tf.lite.experimental.load_delegate('libtensorflowlite_xnnpack.so')]
+    )
     tflite_interpreter.allocate_tensors()
 
     input_details = tflite_interpreter.get_input_details()
@@ -112,9 +115,8 @@ def model_performance(response: Response):
 async def predict(image_request: ImageRequest, response: Response):
     response.headers["Access-Control-Allow-Origin"] = "*"
     processing_time = 0
-    explanation = None
 
-    start_time = time.time()
+    start_time = time.perf_counter()
 
     try:
         text, processed_image = await process_text_and_image(image_request.images[0])
@@ -137,10 +139,10 @@ async def predict(image_request: ImageRequest, response: Response):
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error processing image: {str(e)}")
 
-    end_time = time.time()
+    end_time = time.perf_counter()
     processing_time = end_time - start_time
 
-    # Explanation (if necessary, can be an additional function)
+    # Explanation
     judge_output = meme_explanation(image_request.images[0], predictions)
 
     output = {
@@ -153,8 +155,6 @@ async def predict(image_request: ImageRequest, response: Response):
     insert_judge_output(judge_output, predictions, image_request.images[0])
 
     return output
-
-
 
 
 if __name__ == "__main__":
