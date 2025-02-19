@@ -42,8 +42,7 @@ class ImageRequest(BaseModel):
 
 try:
     tflite_interpreter = tf.lite.Interpreter(
-        model_path="./model_checkpoints/best_model.tflite",
-        experimental_delegates=[tf.lite.experimental.load_delegate('libtensorflowlite_xnnpack.so')]
+        model_path="./model_checkpoints/best_model.tflite"
     )
     tflite_interpreter.allocate_tensors()
 
